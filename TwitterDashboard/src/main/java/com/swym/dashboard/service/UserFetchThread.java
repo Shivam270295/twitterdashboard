@@ -16,8 +16,7 @@ public class UserFetchThread implements Runnable {
 	private int end;
 	private CountDownLatch countDownLatch;
 
-	public UserFetchThread(List<User> userList, long[] friendIds, int start, int end,
-			CountDownLatch countDownLatch) {
+	public UserFetchThread(List<User> userList, long[] friendIds, int start, int end, CountDownLatch countDownLatch) {
 		this.userList = userList;
 		this.friendIds = friendIds;
 		this.start = start;

@@ -42,7 +42,8 @@ public class InMemoryUserService implements UserService {
 
 		int noOfFriends = user.getFriendsCount();
 
-		int latchCount = noOfFriends % USER_PER_PAGE == 0 ? noOfFriends / USER_PER_PAGE : (noOfFriends / USER_PER_PAGE) + 1;
+		int latchCount = noOfFriends % USER_PER_PAGE == 0 ? noOfFriends / USER_PER_PAGE
+				: (noOfFriends / USER_PER_PAGE) + 1;
 		CountDownLatch countDownLatch = new CountDownLatch(latchCount);
 		do {
 			try {
@@ -86,29 +87,32 @@ public class InMemoryUserService implements UserService {
 	}
 
 	@Override
-	public List<Map.Entry<String,List<Status>>> getTopUserTweets(User user, TweetDimension tweetDimension) {
+	public List<Map.Entry<String, List<Status>>> getTopUserTweets(User user, TweetDimension tweetDimension) {
 		List<Status> result = Collections.synchronizedList(new LinkedList<>());
-		if(tweetDimension.equals(TweetDimension.HASHTAG) && InMemoryAggregator.popularTweetsByHashTagMap.containsKey(user.getScreenName()))
+		if (tweetDimension.equals(TweetDimension.HASHTAG)
+				&& InMemoryAggregator.popularTweetsByHashTagMap.containsKey(user.getScreenName()))
 			return InMemoryAggregator.popularTweetsByHashTagMap.get(user.getScreenName());
-		else if(tweetDimension.equals(TweetDimension.USER_MENTION) && InMemoryAggregator.popularTweetsByMentionMap.containsKey(user.getScreenName()))
+		else if (tweetDimension.equals(TweetDimension.USER_MENTION)
+				&& InMemoryAggregator.popularTweetsByMentionMap.containsKey(user.getScreenName()))
 			return InMemoryAggregator.popularTweetsByMentionMap.get(user.getScreenName());
-		else if(tweetDimension.equals(TweetDimension.RETWEETS) && InMemoryAggregator.popularTweetsByRetweetMap.containsKey(user.getScreenName()))
+		else if (tweetDimension.equals(TweetDimension.RETWEETS)
+				&& InMemoryAggregator.popularTweetsByRetweetMap.containsKey(user.getScreenName()))
 			return InMemoryAggregator.popularTweetsByRetweetMap.get(user.getScreenName());
-		
+
 		CountDownLatch countDownLatch = new CountDownLatch(STATUS_PAGE_LIMIT);
-		for(int i=1; i <= STATUS_PAGE_LIMIT; i++)
-		{
-			Paging paging = new Paging(i,STATUS_PER_PAGE);
+		for (int i = 1; i <= STATUS_PAGE_LIMIT; i++) {
+			Paging paging = new Paging(i, STATUS_PER_PAGE);
 			pageFetchExecutor.execute(new TweetFetchThread(result, paging, user, countDownLatch));
 		}
-		
+
 		try {
 			countDownLatch.await();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
-		List<Map.Entry<String,List<Status>>> tweets = InMemoryAggregator.calculateTopTweetTopics(result, user, tweetDimension);
+
+		List<Map.Entry<String, List<Status>>> tweets = InMemoryAggregator.calculateTopTweetTopics(result, user,
+				tweetDimension);
 
 		return tweets;
 	}

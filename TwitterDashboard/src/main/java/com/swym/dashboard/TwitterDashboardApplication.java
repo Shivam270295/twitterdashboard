@@ -15,8 +15,7 @@ public class TwitterDashboardApplication {
 	}
 
 	@Bean
-	public UserService getUserService()
-	{
+	public UserService getUserService() {
 		return new InMemoryUserService();
 	}
 }

@@ -2,7 +2,6 @@ package com.swym.dashboard.ui;
 
 import static com.swym.dashboard.util.DashboardConstants.*;
 
-
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -49,6 +48,8 @@ public class DashboardUI extends UI {
 
 	@Autowired
 	UserService userService;
+	
+	private User selectedUser;
 
 	@SuppressWarnings("deprecation")
 	public Layout buildLayout() {
@@ -87,8 +88,18 @@ public class DashboardUI extends UI {
 			mainTabSheet.addTab(tabSheetPopularTweets, TAB_LBL_POPULAR_TWEETS);
 
 			searchButton.addClickListener(event -> {
-				User curUser = userService.getUserByTwitterId(searchText.getValue().trim());
+				String searchQuery = searchText.getValue().trim();
+
+				if(searchQuery.isEmpty() || ( selectedUser!=null && selectedUser.getScreenName().equals(searchQuery) )){
+					return;
+				}
+				if(searchQuery.charAt(0) =='@')
+				{
+					searchQuery = searchQuery.substring(1);
+				}
+				User curUser = userService.getUserByTwitterId(searchQuery);
 				if (curUser != null) {
+					selectedUser = curUser;
 					List<User> usersbyFollowers = userService.getTopTwitterFriends(curUser, UserDimension.FOLLOWERS);
 					usersByFollowersGrid.setCaption(GRID_LBL_TOP_FOLLOWERS + curUser.getScreenName());
 
@@ -111,7 +122,6 @@ public class DashboardUI extends UI {
 						popularTweetsByRetweetsGrid.setItems(popularTweetsByRetweet.get(0).getValue());
 
 					Layout userInfoLayout = constructUserInfo(curUser);
-					
 
 					tabSheetLayout.removeAllComponents();
 					baseLayout.removeAllComponents();
@@ -265,13 +275,17 @@ public class DashboardUI extends UI {
 		VerticalLayout popupLayout = new VerticalLayout();
 		Panel panel = new Panel(LBL_TWEETS);
 		for (Status status : tweets) {
-			Label label = new Label();
-			label.setValue(status.getText());
-			label.setStyleName(ValoTheme.LABEL_SMALL);
-			popupLayout.addComponent(label);
+			Panel tweetpanel = new Panel();
+			Label tweet = new Label();
+			tweet.setValue(status.getText());
+			tweet.setWidth(260,Unit.PIXELS);
+			tweet.setStyleName(ValoTheme.LABEL_SMALL);
+			tweetpanel.setContent(tweet);
+
+			popupLayout.addComponent(tweetpanel);
 		}
-		panel.setHeight(300,Unit.PIXELS);
-		panel.setWidth(300,Unit.PIXELS);
+		panel.setHeight(300, Unit.PIXELS);
+		panel.setWidth(300, Unit.PIXELS);
 		panel.setContent(popupLayout);
 		popupLayout.setSizeUndefined();
 		PopupView popUpView = new PopupView(POPUP_LBL_VIEW, panel);
@@ -290,7 +304,7 @@ public class DashboardUI extends UI {
 		usersByFollowersGrid.addColumn(User::getName).setCaption(COL_LBL_NAME);
 		usersByFollowersGrid.addColumn(User::getScreenName).setCaption(COL_LBL_TWITTERID);
 		usersByFollowersGrid.addColumn(User::getFollowersCount).setCaption(COL_LBL_FOLLOWER_COUNT);
-		usersByFollowersGrid.addComponentColumn(user->{
+		usersByFollowersGrid.addComponentColumn(user -> {
 			PopupView popupView = new PopupView(POPUP_LBL_VIEW, constructUserStats(user));
 			return popupView;
 		}).setCaption(COL_LBL_VIEW_STATS);
@@ -298,7 +312,7 @@ public class DashboardUI extends UI {
 		usersByTweetsGrid.addColumn(User::getName).setCaption(COL_LBL_NAME);
 		usersByTweetsGrid.addColumn(User::getScreenName).setCaption(COL_LBL_TWITTERID);
 		usersByTweetsGrid.addColumn(User::getStatusesCount).setCaption(COL_LBL_TWEET_COUNT);
-		usersByTweetsGrid.addComponentColumn(user->{
+		usersByTweetsGrid.addComponentColumn(user -> {
 			PopupView popupView = new PopupView(POPUP_LBL_VIEW, constructUserStats(user));
 			return popupView;
 		}).setCaption(COL_LBL_VIEW_STATS);
@@ -325,24 +339,22 @@ public class DashboardUI extends UI {
 
 		return mainLayout;
 	}
-	
+
 	private Panel constructUserStats(User curUser) {
 		VerticalLayout mainLayout = new VerticalLayout();
-		
+
 		Panel panel = new Panel();
 		panel.setCaption("User Stats");
 		panel.setWidth("300px");
 		panel.setHeight("250px");
 		panel.setStyleName(ValoTheme.PANEL_BORDERLESS);
-		
-		
+
 		Label tweetsHeading = new Label(LBL_TWEETS);
 		tweetsHeading.setStyleName(ValoTheme.LABEL_TINY);
 		Label tweets = new Label(Integer.toString(curUser.getStatusesCount()));
 		tweets.setStyleName(ValoTheme.LABEL_BOLD);
 		mainLayout.addComponent(tweetsHeading);
 		mainLayout.addComponent(tweets);
-		
 
 		Label followerHeading = new Label(LBL_FOLLOWERS);
 		followerHeading.setStyleName(ValoTheme.LABEL_TINY);
@@ -351,21 +363,20 @@ public class DashboardUI extends UI {
 		mainLayout.addComponent(followerHeading);
 		mainLayout.addComponent(followers);
 
-		
 		Label friendsHeading = new Label(LBL_FRIENDS);
 		friendsHeading.setStyleName(ValoTheme.LABEL_TINY);
 		Label friends = new Label(Integer.toString(curUser.getFriendsCount()));
 		friends.setStyleName(ValoTheme.LABEL_BOLD);
 		mainLayout.addComponent(friendsHeading);
 		mainLayout.addComponent(friends);
-		
+
 		Label listheading = new Label(LBL_LIST);
 		listheading.setStyleName(ValoTheme.LABEL_TINY);
 		Label lists = new Label(Integer.toString(curUser.getListedCount()));
 		lists.setStyleName(ValoTheme.LABEL_BOLD);
 		mainLayout.addComponent(listheading);
 		mainLayout.addComponent(lists);
-		
+
 		mainLayout.setSpacing(false);
 		panel.setContent(mainLayout);
 		return panel;
