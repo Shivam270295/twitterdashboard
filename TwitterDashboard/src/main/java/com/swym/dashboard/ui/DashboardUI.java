@@ -99,46 +99,51 @@ public class DashboardUI extends UI {
 				}
 				User curUser = userService.getUserByTwitterId(searchQuery);
 				if (curUser != null && !curUser.isProtected()) {
-					selectedUser = curUser;
-					List<User> usersbyFollowers = userService.getTopTwitterFriends(curUser, UserDimension.FOLLOWERS);
-					usersByFollowersGrid.setCaption(GRID_LBL_TOP_FOLLOWERS + curUser.getScreenName());
+					try {
+						selectedUser = curUser;
+						List<User> usersbyFollowers = userService.getTopTwitterFriends(curUser, UserDimension.FOLLOWERS);
+						usersByFollowersGrid.setCaption(GRID_LBL_TOP_FOLLOWERS + curUser.getScreenName());
 
-					usersByFollowersGrid.setItems(usersbyFollowers);
+						usersByFollowersGrid.setItems(usersbyFollowers);
 
-					List<User> usersbyTweets = userService.getTopTwitterFriends(curUser, UserDimension.TWEETS);
-					usersByTweetsGrid.setItems(usersbyTweets);
+						List<User> usersbyTweets = userService.getTopTwitterFriends(curUser, UserDimension.TWEETS);
+						usersByTweetsGrid.setItems(usersbyTweets);
 
-					List<Map.Entry<String, List<Status>>> popularTweetsByHashTag = userService.getTopUserTweets(curUser,
-							TweetDimension.HASHTAG);
-					popularTweetsByHashTagGrid.setItems(popularTweetsByHashTag);
+						List<Map.Entry<String, List<Status>>> popularTweetsByHashTag = userService.getTopUserTweets(curUser,
+								TweetDimension.HASHTAG);
+						popularTweetsByHashTagGrid.setItems(popularTweetsByHashTag);
 
-					List<Map.Entry<String, List<Status>>> popularTweetsByMention = userService.getTopUserTweets(curUser,
-							TweetDimension.USER_MENTION);
-					popularTweetsByMentionGrid.setItems(popularTweetsByMention);
+						List<Map.Entry<String, List<Status>>> popularTweetsByMention = userService.getTopUserTweets(curUser,
+								TweetDimension.USER_MENTION);
+						popularTweetsByMentionGrid.setItems(popularTweetsByMention);
 
-					List<Map.Entry<String, List<Status>>> popularTweetsByRetweet = userService.getTopUserTweets(curUser,
-							TweetDimension.RETWEETS);
-					if (popularTweetsByRetweet.size() > 0)
-						popularTweetsByRetweetsGrid.setItems(popularTweetsByRetweet.get(0).getValue());
+						List<Map.Entry<String, List<Status>>> popularTweetsByRetweet = userService.getTopUserTweets(curUser,
+								TweetDimension.RETWEETS);
+						if (popularTweetsByRetweet.size() > 0)
+							popularTweetsByRetweetsGrid.setItems(popularTweetsByRetweet.get(0).getValue());
 
-					Layout userInfoLayout = constructUserInfo(curUser);
+						Layout userInfoLayout = constructUserInfo(curUser);
 
-					tabSheetLayout.removeAllComponents();
-					baseLayout.removeAllComponents();
-					constructHeaderLayout(searchButton, searchText, false);
+						tabSheetLayout.removeAllComponents();
+						baseLayout.removeAllComponents();
+						constructHeaderLayout(searchButton, searchText, false);
 
-					tabSheetLayout.setSpacing(true);
-					tabSheetLayout.addComponent(userInfoLayout);
-					tabSheetLayout.setComponentAlignment(userInfoLayout, Alignment.TOP_LEFT);
+						tabSheetLayout.setSpacing(true);
+						tabSheetLayout.addComponent(userInfoLayout);
+						tabSheetLayout.setComponentAlignment(userInfoLayout, Alignment.TOP_LEFT);
 
-					tabSheetLayout.addComponent(mainTabSheet);
-					baseLayout.addComponent(tabSheetLayout);
+						tabSheetLayout.addComponent(mainTabSheet);
+						baseLayout.addComponent(tabSheetLayout);
 
-					VerticalLayout sideLayout = constructSideLayout(curUser);
-					sideLayout.setSpacing(false);
-					sideLayout.addComponentAsFirst(constructUserStats(curUser));
-					tabSheetLayout.addComponent(sideLayout);
-
+						VerticalLayout sideLayout = constructSideLayout(curUser);
+						sideLayout.setSpacing(false);
+						sideLayout.addComponentAsFirst(constructUserStats(curUser));
+						tabSheetLayout.addComponent(sideLayout);
+	
+					}catch(Exception ex) {
+						Notification.show(ERR_ID_PROTECTED, Notification.TYPE_WARNING_MESSAGE);
+					}
+					
 				} else if (curUser!=null && curUser.isProtected()){
 					Notification.show(ERR_ID_PROTECTED, Notification.TYPE_WARNING_MESSAGE);
 				}
