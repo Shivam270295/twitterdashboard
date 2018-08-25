@@ -43,5 +43,7 @@ public class DashboardConstants {
 	public static final String POPUP_LBL_VIEW = "view";
 
 	public static final String ERR_ID_DOESNT_EXIST = "Twitter Id doesn't exist";
+	public static final String ERR_ID_PROTECTED = "Twitter Id is protected";
+
 
 }

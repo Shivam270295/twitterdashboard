@@ -98,7 +98,7 @@ public class DashboardUI extends UI {
 					searchQuery = searchQuery.substring(1);
 				}
 				User curUser = userService.getUserByTwitterId(searchQuery);
-				if (curUser != null) {
+				if (curUser != null && !curUser.isProtected()) {
 					selectedUser = curUser;
 					List<User> usersbyFollowers = userService.getTopTwitterFriends(curUser, UserDimension.FOLLOWERS);
 					usersByFollowersGrid.setCaption(GRID_LBL_TOP_FOLLOWERS + curUser.getScreenName());
@@ -139,8 +139,12 @@ public class DashboardUI extends UI {
 					sideLayout.addComponentAsFirst(constructUserStats(curUser));
 					tabSheetLayout.addComponent(sideLayout);
 
-				} else {
+				} else if (curUser!=null && curUser.isProtected()){
+					Notification.show(ERR_ID_PROTECTED, Notification.TYPE_WARNING_MESSAGE);
+				}
+				else {
 					Notification.show(ERR_ID_DOESNT_EXIST, Notification.TYPE_WARNING_MESSAGE);
+
 				}
 
 			});
